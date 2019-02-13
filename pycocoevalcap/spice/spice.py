@@ -27,12 +27,12 @@ class Spice:
     def compute_score(self, gts, res):
         assert(sorted(gts.keys()) == sorted(res.keys()))
         imgIds = sorted(gts.keys())
-        
+
         # Prepare temp input file for the SPICE scorer
         input_data = []
         for id in imgIds:
             hypo = res[id]
-            ref = gts[id]
+            ref = [r.decode('utf-8') for r in gts[id]]
 
             # Sanity check.
             assert(type(hypo) is list)
@@ -40,22 +40,29 @@ class Spice:
             assert(type(ref) is list)
             assert(len(ref) >= 1)
 
+            hyp_cand = hypo[0].decode('utf-8')
+            # print(type(id))
+            # print(hypo)
+            # print(ref)
+            # print(type(hypo[0]))
+            # print(type(ref[0]))
             input_data.append({
               "image_id" : id,
-              "test" : hypo[0],
-              "refs" : ref
+              "test": hyp_cand,
+              "refs": ref
             })
 
         cwd = os.path.dirname(os.path.abspath(__file__))
         temp_dir=os.path.join(cwd, TEMP_DIR)
         if not os.path.exists(temp_dir):
           os.makedirs(temp_dir)
-        in_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir)
+        in_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, encoding='utf-8', mode='w')
+        # import pdb; pdb.set_trace()
         json.dump(input_data, in_file, indent=2)
         in_file.close()
 
         # Start job
-        out_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir)
+        out_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, encoding='utf-8', mode='r')
         out_file.close()
         cache_dir=os.path.join(cwd, CACHE_DIR)
         if not os.path.exists(cache_dir):
@@ -66,11 +73,11 @@ class Spice:
           '-subset',
           '-silent'
         ]
-        subprocess.check_call(spice_cmd, 
+        subprocess.check_call(spice_cmd,
             cwd=os.path.dirname(os.path.abspath(__file__)))
 
         # Read and process results
-        with open(out_file.name) as data_file:    
+        with open(out_file.name) as data_file:
           results = json.load(data_file)
         os.remove(in_file.name)
         os.remove(out_file.name)
@@ -85,7 +92,7 @@ class Spice:
         for image_id in imgIds:
           # Convert none to NaN before saving scores over subcategories
           score_set = {}
-          for category,score_tuple in imgId_to_scores[image_id].iteritems():
+          for category,score_tuple in imgId_to_scores[image_id].items():
             score_set[category] = {k: self.float_convert(v) for k, v in score_tuple.items()}
           scores.append(score_set)
         return average_score, scores
