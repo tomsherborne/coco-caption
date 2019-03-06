@@ -1,1 +1,7 @@
 *.pyc
+*.mdb
+*.jar
+tokenizer
+.ipynb_checkpoints
+.idea
+tmp
