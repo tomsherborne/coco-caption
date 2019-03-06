@@ -17,7 +17,6 @@ class COCOEvalCap:
 
     def evaluate(self):
         imgIds = self.params['image_id']
-        # imgIds = self.coco.getImgIds()
         gts = {}
         res = {}
         for imgId in imgIds:
@@ -41,7 +40,7 @@ class COCOEvalCap:
             (Rouge(), "ROUGE_L"),
             (Cider(), "CIDEr"),
             (Spice(), "SPICE")
-            # (Meteor(), "METEOR")
+            # (Meteor(), "METEOR") # Removed due to functionality bugs
         ]
 
         # =================================================
