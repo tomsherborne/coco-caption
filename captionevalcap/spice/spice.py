@@ -1,22 +1,19 @@
 from __future__ import division
 import os
-import sys
 import subprocess
-import threading
 import json
 import numpy as np
-import ast
 import tempfile
 
-# Assumes spice.jar is in the same directory as spice.py.  Change as needed.
-SPICE_JAR = 'spice-1.0.jar'
-TEMP_DIR = 'tmp'
-CACHE_DIR = 'cache'
 
-class Spice:
+class Spice(object):
     """
     Main Class to compute the SPICE metric 
     """
+    def __init__(self):
+        self.spice_jar = os.environ['SPICE_JAR']
+        self.temp_dir = os.environ['SPICE_TMP_DIR']
+        self.cache_dir = os.environ['SPICE_CACHE_DIR']
 
     def float_convert(self, obj):
         try:
@@ -41,11 +38,6 @@ class Spice:
             assert(len(ref) >= 1)
 
             hyp_cand = hypo[0].decode('utf-8')
-            # print(type(id))
-            # print(hypo)
-            # print(ref)
-            # print(type(hypo[0]))
-            # print(type(ref[0]))
             input_data.append({
               "image_id" : id,
               "test": hyp_cand,
@@ -53,21 +45,21 @@ class Spice:
             })
 
         cwd = os.path.dirname(os.path.abspath(__file__))
-        temp_dir=os.path.join(cwd, TEMP_DIR)
+        temp_dir=os.path.join(cwd, self.temp_dir)
         if not os.path.exists(temp_dir):
           os.makedirs(temp_dir)
         in_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, encoding='utf-8', mode='w')
-        # import pdb; pdb.set_trace()
+
         json.dump(input_data, in_file, indent=2)
         in_file.close()
 
         # Start job
         out_file = tempfile.NamedTemporaryFile(delete=False, dir=temp_dir, encoding='utf-8', mode='r')
         out_file.close()
-        cache_dir=os.path.join(cwd, CACHE_DIR)
+        cache_dir=os.path.join(cwd, self.cache_dir)
         if not os.path.exists(cache_dir):
           os.makedirs(cache_dir)
-        spice_cmd = ['java', '-jar', '-Xmx8G', SPICE_JAR, in_file.name,
+        spice_cmd = ['java', '-jar', '-Xmx8G', self.spice_jar, in_file.name,
           '-cache', cache_dir,
           '-out', out_file.name,
           '-subset',
@@ -99,5 +91,3 @@ class Spice:
 
     def method(self):
         return "SPICE"
-
-

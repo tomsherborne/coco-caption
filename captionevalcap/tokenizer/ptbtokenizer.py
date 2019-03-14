@@ -15,7 +15,7 @@ import tempfile
 import itertools
 
 # path to the stanford corenlp jar
-STANFORD_CORENLP_3_4_1_JAR = 'stanford-corenlp-3.4.1.jar'
+# STANFORD_CORENLP_3_4_1_JAR = 'stanford-corenlp-3.4.1.jar'
 
 # punctuations to be removed from the sentences
 PUNCTUATIONS = ["''", "'", "``", "`", "-LRB-", "-RRB-", "-LCB-", "-RCB-",
@@ -25,7 +25,7 @@ class PTBTokenizer:
     """Python wrapper of Stanford PTBTokenizer"""
 
     def tokenize(self, captions_for_image):
-        cmd = ['java', '-cp', STANFORD_CORENLP_3_4_1_JAR,
+        cmd = ['java', '-cp', os.environ['STANFORD_NLP_JAR'],
                 'edu.stanford.nlp.process.PTBTokenizer',
                 '-preserveLines', '-lowerCase']
 
